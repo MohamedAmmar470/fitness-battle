@@ -1,0 +1,159 @@
+<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>معركة التمارين</title>
+<style>
+body{margin:0;background:#1c2438;color:#dbe4ff;font-family:system-ui,sans-serif;display:flex;justify-content:center}
+#app{width:100%;max-width:480px;padding:10px;box-sizing:border-box}
+.s{display:none}.s.on{display:block}
+button{width:100%;padding:13px;margin:4px 0;border-radius:10px;border:0;background:#2b3652;color:#fff;font-size:17px}
+.pri{background:#4c8dff;font-weight:bold}
+h2{margin:6px 0;color:#f5d76e}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.grid button{padding:22px 6px;font-size:18px}
+.card{background:#2b3652;border-radius:10px;padding:10px;margin-top:8px;line-height:1.7}
+.card ol{margin:4px 0;padding-inline-start:22px}
+.red{color:#ff5a6e;font-weight:bold}
+#fig{width:100%;background:#e9ecf3;border-radius:10px}
+.mon{background:#39435c;padding:8px 12px;border-radius:8px}
+#mn{color:#f5d76e;font-size:22px}
+.hp{position:relative;height:26px;background:#222b40;margin-top:4px;border-radius:4px;overflow:hidden}
+#hpb{position:absolute;inset:0 auto 0 0;background:#ef5b6b;width:100%;transition:width .2s}
+#hpt{position:absolute;inset:0;text-align:center;line-height:26px}
+.cam{position:relative;margin-top:6px;border-radius:8px;overflow:hidden;background:#000;aspect-ratio:3/4}
+video{display:none}#c{width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}
+.bar{position:absolute;left:10px;top:20%;height:55%;width:16px;background:#39435c;border-radius:8px;overflow:hidden}
+#pb{position:absolute;bottom:0;width:100%;background:#3ddc84;height:0}
+.dmg{text-align:center;background:#2b3652;border-radius:8px;margin-top:6px;padding:8px}
+#d{font-size:52px;color:#4c8dff;display:block}
+#hint{color:#7fa8ff;font-size:19px;margin:4px}
+</style></head><body><div id="app">
+
+<div class="s on" id="s1"><h2>اختر التمرين</h2><div class="grid" id="grid"></div></div>
+
+<div class="s" id="s2"><button onclick="show('s1')" style="width:auto;padding:8px 16px">→ رجوع</button>
+<h2 id="gt"></h2><canvas id="fig" width="300" height="200"></canvas>
+<div class="card"><b>طريقة الأداء:</b><ol id="gs"></ol>
+<div>💪 العضلات المستهدفة (باللون الأحمر): <span class="red" id="gm"></span></div>
+<div>📱 وضع الكاميرا: <span id="gc"></span></div></div>
+<button class="pri" onclick="startBattle()">ابدأ المعركة ⚔️</button></div>
+
+<div class="s" id="s3"><button onclick="stopCam();show('s2')" style="width:auto;padding:8px 16px">→ رجوع</button>
+<button id="snd" onclick="toggleSnd()">🔊 الصوت: يعمل</button>
+<div class="mon"><span id="mn"></span><div class="hp"><div id="hpb"></div><div id="hpt"></div></div></div>
+<div class="cam"><video id="v" playsinline muted></video><canvas id="c"></canvas><div class="bar"><div id="pb"></div></div></div>
+<div class="dmg"><span id="d">0</span>الضرر المُنفَّذ<p id="hint"></p></div></div>
+</div>
+<script>
+const $=id=>document.getElementById(id);
+const ang=(a,b,c)=>{let d=Math.abs((Math.atan2(c.y-b.y,c.x-b.x)-Math.atan2(a.y-b.y,a.x-b.x))*180/Math.PI);return d>180?360-d:d};
+const avg=(L,t)=>{const v=t.filter(s=>s.every(i=>(L[i].visibility??1)>.4));return v.length?v.reduce((s,x)=>s+ang(L[x[0]],L[x[1]],L[x[2]]),0)/v.length:null};
+const ELB=[[11,13,15],[12,14,16]],KNEE=[[23,25,27],[24,26,28]],HIP=[[11,23,25],[12,24,26]];
+// مفاصل الشخصية: 0 رأس،1 كتف،2 مرفق،3 معصم،4 ورك،5 ركبة،6 كاحل | قطع: 0 عضد،1 ساعد،2 جذع،3 فخذ،4 ساق
+const SEG=[[1,2],[2,3],[1,4],[4,5],[5,6]];
+const STAND=(e,w,k=[150,155],a=[150,188],h=[150,125],s=[150,75],hd=[150,55])=>[...hd,...s,...e,...w,...h,...k,...a];
+const EX={
+pushup:{n:"ضغط (Push-up)",m:L=>avg(L,ELB),lo:90,hi:155,h:["انزل أكثر!","ادفع للأعلى!"],
+ A:[235,95,215,105,215,140,215,175,120,139,75,155,30,172],B:[238,148,215,155,190,168,215,175,120,164,75,168,30,172],
+ mus:[0,1,2],mn:"الصدر، الترايسبس، الأكتاف",cam:"ضع الجوال على الأرض من الجانب ليظهر جسمك كاملاً",
+ st:["ضع يديك أوسع قليلاً من كتفيك","اجعل جسمك خطاً مستقيماً من الرأس للكعب","انزل حتى ينثني المرفق 90°","ادفع للأعلى حتى يستقيم الذراع"]},
+squat:{n:"سكوات (Squat)",m:L=>avg(L,KNEE),lo:100,hi:160,h:["اجلس أعمق!","قف!"],
+ A:[132,40,130,60,148,85,170,82,130,110,133,145,130,180],B:[160,75,150,95,165,115,185,110,120,140,165,150,130,180],
+ mus:[3,4,2],mn:"الفخذ الأمامي، الأرداف، أسفل الظهر",cam:"ضع الجوال أمامك أو من الجانب على بعد مترين",
+ st:["قدماك بعرض الكتفين","ادفع الأرداف للخلف كأنك تجلس على كرسي","انزل حتى يوازي فخذاك الأرض","ادفع بكعبيك للأعلى"]},
+lunge:{n:"لانجز (Lunge)",m:L=>avg(L,KNEE),lo:110,hi:160,h:["انزل!","ارتفع!"],
+ A:[132,40,130,60,148,85,170,82,130,110,133,145,130,180],B:[132,80,130,100,128,125,148,135,130,148,178,148,178,185],
+ mus:[3,4],mn:"الفخذ، الأرداف",cam:"من الجانب على بعد مترين",
+ st:["خذ خطوة كبيرة للأمام","انزل حتى تنثني الركبتان 90°","ابقَ الجذع مستقيماً","ادفع للعودة للوقوف"]},
+situp:{n:"بطن (Sit-up)",m:L=>avg(L,HIP),lo:90,hi:140,h:["ارفع جذعك!","استلقِ!"],
+ A:[40,168,65,170,55,150,45,155,140,170,190,135,215,170],B:[130,92,120,110,152,110,138,100,140,170,190,135,215,170],
+ mus:[2],mn:"عضلات البطن",cam:"من الجانب مع ظهور الجسم كاملاً",
+ st:["استلقِ وثبّت قدميك مع ثني الركبتين","ضع يديك خلف رأسك","ارفع جذعك حتى تقترب من ركبتيك","انزل ببطء"]},
+curl:{n:"بايسبس كيرل",m:L=>avg(L,ELB),lo:50,hi:140,h:["اثنِ المرفق!","انزل ببطء!"],
+ A:STAND([152,108],[152,140]),B:STAND([155,108],[180,80]),
+ mus:[0,1],mn:"البايسبس والساعد",cam:"من الجانب أو الأمام، وذراعك ظاهرة",
+ st:["قف مستقيماً وثبّت المرفق بجانبك","ارفع اليد نحو الكتف","اعصر العضلة لحظة","انزل ببطء"]},
+press:{n:"ضغط أكتاف",m:L=>avg(L,ELB),lo:95,hi:160,h:["اخفض يديك!","ادفع للأعلى!"],
+ A:STAND([172,98],[160,68]),B:STAND([152,45],[152,15]),
+ mus:[0,1,2],mn:"الأكتاف والترايسبس",cam:"من الأمام، وذراعاك ظاهرتان",
+ st:["ابدأ بيديك عند مستوى الكتفين","ادفع للأعلى حتى تستقيم الذراعان","لا تقوّس ظهرك","انزل ببطء"]},
+jack:{n:"جامبينج جاك",m:L=>((L[15].y+L[16].y)/2-L[0].y)*100,lo:0,hi:25,h:["ارفع يديك فوق رأسك!","انزل يديك!"],mir:1,
+ A:[150,55,165,78,175,105,177,135,155,125,158,155,158,188],B:[150,55,165,78,195,60,215,30,155,125,185,155,200,188],
+ mus:[0,1,3,4],mn:"الأكتاف، الفخذ، السمانة",cam:"من الأمام ليظهر جسمك كاملاً",
+ st:["قف وقدماك مجتمعتان","اقفز وباعد قدميك وارفع ذراعيك","ثم عد للوضع الأول","حافظ على إيقاع ثابت"]}
+};
+let cur;
+Object.entries(EX).forEach(([k,e])=>{const b=document.createElement("button");b.textContent=e.n;b.onclick=()=>pick(k);$("grid").append(b)});
+function show(id){document.querySelectorAll(".s").forEach(s=>s.classList.toggle("on",s.id===id))}
+function pick(k){cur=k;const e=EX[k];$("gt").textContent=e.n;$("gs").innerHTML=e.st.map(x=>"<li>"+x+"</li>").join("");$("gm").textContent=e.mn;$("gc").textContent=e.cam;show("s2")}
+// ===== الشخصية المتحركة (جسم عضلي) =====
+const fc=$("fig").getContext("2d");
+const shape=(a,b,ra,rb)=>{const dx=b[0]-a[0],dy=b[1]-a[1],l=Math.hypot(dx,dy)||1,nx=-dy/l,ny=dx/l;
+ fc.beginPath();fc.arc(a[0],a[1],ra,0,7);fc.fill();fc.beginPath();fc.arc(b[0],b[1],rb,0,7);fc.fill();
+ fc.beginPath();fc.moveTo(a[0]+nx*ra,a[1]+ny*ra);fc.lineTo(b[0]+nx*rb,b[1]+ny*rb);fc.lineTo(b[0]-nx*rb,b[1]-ny*rb);fc.lineTo(a[0]-nx*ra,a[1]-ny*ra);fc.closePath();fc.fill()};
+const T=(q,m,dx)=>m?[300-q[0],q[1]]:[q[0]+dx,q[1]];
+function grp(list,fill,out,m,dx=0){[[out,2.5],[fill,0]].forEach(([c,g])=>{fc.fillStyle=c;list.forEach(([a,b,ra,rb])=>shape(T(a,m,dx),T(b,m,dx),ra+g,rb+g))})}
+function figure(e,P,p){
+ const J=i=>[P[i*2],P[i*2+1]],mix=(a,b,t)=>[a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t];
+ const foot=[J(6)[0]+14,J(6)[1]],t0=e.mir?12:20,t1=e.mir?11:15;
+ const arms=[[J(1),J(2),12,8],[J(2),J(3),8,6],[J(3),J(3),7,7]],
+  legs=[[J(4),J(5),16,11],[J(5),J(6),10,6],[J(6),foot,5,5]],
+  torso=[[J(1),J(4),t0,t1],[J(0),J(1),6,8]],head=[[J(0),J(0),12,12]],
+  shorts=[[J(4),mix(J(4),J(5),.55),17,15]];
+ const MUS={0:[J(1),J(2),10,6],1:[J(2),J(3),6,4.5],2:[J(1),J(4),t0-5,t1-4],3:[J(4),J(5),13,9],4:[J(5),J(6),8,4.5]};
+ const modes=e.mir?[0,1]:[0];
+ if(!e.mir){grp([...legs,...arms],"#22252c","#5d6373",0,-9)}
+ modes.forEach(m=>{
+  grp(legs,"#2f333c","#a9afbd",m);grp(torso,"#2f333c","#a9afbd",m);grp(shorts,"#111","#777",m);
+  grp(head,"#2f333c","#a9afbd",m);grp(arms,"#2f333c","#a9afbd",m);
+  fc.save();fc.shadowColor="#ff2244";fc.shadowBlur=14;fc.fillStyle=`rgba(255,50,80,${.3+.65*p})`;
+  e.mus.forEach(i=>{const[a,b,ra,rb]=MUS[i];shape(T(a,m,0),T(b,m,0),ra,rb)});fc.restore()});
+ const h=J(0);fc.fillStyle="#fff";
+ (e.mir?[[-5,-2],[5,-2]]:[[3,-2],[9,-2]]).forEach(([x,y])=>{fc.beginPath();fc.arc(h[0]+x,h[1]+y,2.7,0,7);fc.fill()})}
+function figLoop(t){
+ if($("s2").classList.contains("on")&&cur){const e=EX[cur],p=(1-Math.cos(t/450))/2;
+  const P=e.A.map((v,i)=>v+(e.B[i]-v)*p);
+  fc.clearRect(0,0,300,200);fc.fillStyle="#e9ecf3";fc.fillRect(0,0,300,200);
+  fc.strokeStyle="#b8bdca";fc.lineWidth=3;fc.beginPath();fc.moveTo(0,190);fc.lineTo(300,190);fc.stroke();
+  figure(e,P,p)}
+ requestAnimationFrame(figLoop)}
+requestAnimationFrame(figLoop);
+// ===== الصوت =====
+let snd=true,ac;
+function toggleSnd(){snd=!snd;$("snd").textContent="🔊 الصوت: "+(snd?"يعمل":"متوقف")}
+function beep(f,d=.12,at=0){if(!snd)return;ac=ac||new(window.AudioContext||window.webkitAudioContext)();const o=ac.createOscillator(),g=ac.createGain();o.frequency.value=f;o.connect(g);g.connect(ac.destination);g.gain.value=.2;const t=ac.currentTime+at;o.start(t);o.stop(t+d)}
+function say(t){if(!snd||!window.speechSynthesis)return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang="ar-SA";speechSynthesis.speak(u)}
+// ===== المعركة =====
+const MON=["غوبلن","أورك","ذئب","تنين"];
+let level=0,hp=0,max=0,total=0,state=null,lm,run=false,last=-1,Lib;
+function spawn(){max=hp=20+level*10;$("mn").textContent=MON[level%4]+" (مستوى "+(level+1)+")";drw()}
+function drw(){$("hpb").style.width=hp/max*100+"%";$("hpt").textContent=hp+" / "+max;$("d").textContent=total}
+function stopCam(){run=false;$("v").srcObject?.getTracks().forEach(t=>t.stop())}
+async function startBattle(){
+ level=0;total=0;state=null;spawn();show("s3");$("hint").textContent="جارٍ تحميل نموذج التتبع...";
+ try{
+  if(!window.isSecureContext)throw new Error("الكاميرا تحتاج رابط https أو فتح الملف على الحاسوب");
+  if(!navigator.mediaDevices)throw new Error("المتصفح لا يدعم الكاميرا");
+  if(!lm){Lib=await import("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/+esm");
+   const f=await Lib.FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm");
+   const mk=d=>Lib.PoseLandmarker.createFromOptions(f,{baseOptions:{modelAssetPath:"https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task",delegate:d},runningMode:"VIDEO",numPoses:1});
+   try{lm=await mk("GPU")}catch(_){lm=await mk("CPU")}}
+  const s=await navigator.mediaDevices.getUserMedia({video:{facingMode:"user"}});
+  const v=$("v");v.srcObject=s;await v.play();run=true;$("hint").textContent="ابدأ التمرين!";beep(600);loop();
+ }catch(e){$("hint").textContent="⚠️ "+e.message}}
+function loop(){
+ if(!run)return;const v=$("v"),c=$("c"),x=c.getContext("2d");
+ if(v.videoWidth&&v.currentTime!==last){last=v.currentTime;c.width=v.videoWidth;c.height=v.videoHeight;x.drawImage(v,0,0);
+  const r=lm.detectForVideo(v,performance.now());
+  if(r.landmarks[0]){const L=r.landmarks[0],du=new Lib.DrawingUtils(x);
+   du.drawConnectors(L,Lib.PoseLandmarker.POSE_CONNECTIONS,{color:"#4c8dff",lineWidth:4});du.drawLandmarks(L,{color:"#9cc0ff",radius:4});step(L)}}
+ requestAnimationFrame(loop)}
+function step(L){
+ const e=EX[cur],m=e.m(L);if(m==null)return;
+ $("pb").style.height=Math.max(0,Math.min(1,(e.hi-m)/(e.hi-e.lo)))*100+"%";
+ if(m>e.hi){if(state==="low")rep();state="high"}else if(m<e.lo){if(state!=="low")beep(330,.05);state="low"}
+ if(state)$("hint").textContent=state==="low"?e.h[1]:e.h[0]}
+function rep(){
+ total++;hp--;navigator.vibrate?.(40);
+ if(hp<=0){beep(523,.15);beep(659,.15,.15);beep(784,.3,.3);say("هزمته! وحش أقوى قادم");level++;spawn()}
+ else{beep(880,.1);say(String(total))}
+ drw()}
+</script></body></html>
