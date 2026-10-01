@@ -21,7 +21,7 @@ h2{margin:6px 0;color:#f5d76e}
 #hpb{position:absolute;inset:0 auto 0 0;background:#ef5b6b;width:100%;transition:width .2s}
 #hpt{position:absolute;inset:0;text-align:center;line-height:26px}
 .cam{position:relative;margin-top:6px;border-radius:8px;overflow:hidden;background:#000;aspect-ratio:3/4}
-video{display:none}#c{width:100%;height:100%;object-fit:cover}
+video{display:none}#c{width:100%;height:100%;object-fit:contain;background:#000}
 .bar{position:absolute;left:10px;top:20%;height:55%;width:16px;background:#39435c;border-radius:8px;overflow:hidden}
 #pb{position:absolute;bottom:0;width:100%;background:#3ddc84;height:0}
 .dmg{text-align:center;background:#2b3652;border-radius:8px;margin-top:6px;padding:8px}
@@ -59,7 +59,7 @@ video{display:none}#c{width:100%;height:100%;object-fit:cover}
 <h2>التمارين</h2><div id="chips"></div><div class="grid" id="grid"></div>
 <div class="card"><b>📜 آخر التمارين</b><div id="hist">لا يوجد بعد</div></div>
 <div class="card"><b>⚖️ حاسبة كتلة الجسم</b><br><input id="bw" class="mi" type="number" placeholder="الوزن كجم"><input id="bh" class="mi" type="number" placeholder="الطول سم"><button onclick="bmi()">احسب</button><div id="br"></div></div>
-<small style="opacity:.6">الإصدار 14 · المجسم 3D: <b id="vs">جارٍ التحميل...</b></small></div>
+<small style="opacity:.6">الإصدار 15 · المجسم 3D: <b id="vs">جارٍ التحميل...</b></small></div>
 
 <div class="s" id="s2"><button onclick="show('s1')" style="width:auto;padding:8px 16px">→ رجوع</button>
 <h2 id="gt"></h2><canvas id="fig" width="300" height="240"></canvas><img id="gimg" alt=""><canvas id="fig3" style="display:none;width:100%;aspect-ratio:6/5;border-radius:10px;touch-action:pan-y"></canvas><div id="m3" style="font-size:13px;opacity:.7;text-align:center"></div>
@@ -205,7 +205,7 @@ async function openCam(){
  for(const c of [{facingMode:{exact:facing},width:{ideal:720},height:{ideal:1280}},{facingMode:facing,width:{ideal:720},height:{ideal:1280}}]){try{s=await navigator.mediaDevices.getUserMedia({video:c});break}catch(e){err=e}}
  if(!s){try{const d=(await navigator.mediaDevices.enumerateDevices()).filter(x=>x.kind==="videoinput");if(d.length>1){di=(di+1)%d.length;s=await navigator.mediaDevices.getUserMedia({video:{deviceId:{exact:d[di].deviceId}}})}}catch(e){err=e}}
  if(!s)throw err||new Error("تعذّر فتح الكاميرا");
- v.srcObject=s;await v.play();const f=s.getVideoTracks()[0].getSettings().facingMode;if(f)facing=f==="environment"?"environment":"user";
+ const track=s.getVideoTracks()[0];try{const zr=track.getCapabilities?.().zoom;if(zr){const zoom=Math.max(zr.min,Math.min(zr.max,1));await track.applyConstraints({advanced:[{zoom}]})}}catch(_){}v.srcObject=s;await v.play();const f=track.getSettings().facingMode;if(f)facing=f==="environment"?"environment":"user";
  $("c").style.transform=facing==="user"?"scaleX(-1)":"none";$("cb").textContent=facing==="user"?"🤳":"📷";last=-1;run=true;loop(++lid)}
 async function flip(){
  facing=facing==="user"?"environment":"user";$("cb").textContent=facing==="user"?"🤳":"📷";if(!run)return;
