@@ -1,6 +1,5 @@
 <!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1"><title>معركة التمارين</title>
-<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
 <style>
 body{margin:0;background:#1c2438;color:#dbe4ff;font-family:system-ui,sans-serif;display:flex;justify-content:center}
 #app{width:100%;max-width:480px;padding:10px;box-sizing:border-box}
@@ -38,6 +37,19 @@ video{display:none}#c{width:100%;height:100%;object-fit:cover}
 .mi{width:42%;padding:8px;margin:4px;border-radius:8px;border:0;font-size:17px;text-align:center}
 .chip{width:auto;display:inline-block;padding:6px 14px;margin:0 0 6px 6px;font-size:14px}.chip.on{background:#4c8dff}
 #chips{white-space:nowrap;overflow-x:auto}
+#s3.on{position:fixed;inset:0;z-index:5;background:#000}
+#s3 .cam{position:absolute;inset:0;margin:0;border-radius:0;aspect-ratio:auto}
+.top{position:absolute;top:0;left:0;right:0;display:flex;align-items:center;gap:6px;padding:10px;padding-top:max(10px,env(safe-area-inset-top));background:linear-gradient(#000c,#0000)}
+.ib{width:44px;height:44px;padding:0;margin:0;border-radius:50%;background:#0009;font-size:20px;flex:none}
+.tt{flex:1;min-width:0}#mn{font-size:14px;color:#f5d76e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tt .hp{height:16px;margin-top:2px}.tt #hpt{line-height:16px;font-size:12px}
+#s3 .bar{top:22%;height:45%;left:12px;width:14px}
+.cnt{position:absolute;left:0;right:0;bottom:150px;text-align:center;pointer-events:none}
+#d{font-size:120px;font-weight:900;line-height:1;color:#fff;text-shadow:0 0 28px #4c8dffcc,0 4px 14px #000}
+#fb{display:inline-block;margin-top:8px;padding:6px 16px;border-radius:18px;font-size:18px;color:#fff;opacity:0;transition:opacity .4s}
+#of{font-size:22px;color:#cfe0ff;text-shadow:0 2px 6px #000}
+#s3 #hint{position:absolute;left:12px;right:12px;bottom:76px;background:#000b;border-radius:22px;padding:11px;text-align:center;font-size:19px;color:#9cc0ff;margin:0}
+#s3 .again{position:absolute;left:12px;right:12px;bottom:14px;margin:0;width:auto}
 </style></head><body><div id="sp" onclick="endSplash()"><canvas id="sc"></canvas><canvas id="sc3"></canvas><div id="sl"><b>FIT</b> BATTLE<small>تمرّن.. وانتصر</small></div></div><div id="app">
 
 <div class="s on" id="s1">
@@ -47,53 +59,54 @@ video{display:none}#c{width:100%;height:100%;object-fit:cover}
 <h2>التمارين</h2><div id="chips"></div><div class="grid" id="grid"></div>
 <div class="card"><b>📜 آخر التمارين</b><div id="hist">لا يوجد بعد</div></div>
 <div class="card"><b>⚖️ حاسبة كتلة الجسم</b><br><input id="bw" class="mi" type="number" placeholder="الوزن كجم"><input id="bh" class="mi" type="number" placeholder="الطول سم"><button onclick="bmi()">احسب</button><div id="br"></div></div>
-<small style="opacity:.5">الإصدار 8</small></div>
+<small style="opacity:.5">الإصدار 11</small></div>
 
 <div class="s" id="s2"><button onclick="show('s1')" style="width:auto;padding:8px 16px">→ رجوع</button>
-<h2 id="gt"></h2><canvas id="fig" width="300" height="240"></canvas><img id="gimg" alt=""><canvas id="fig3" style="display:none;width:100%;aspect-ratio:5/4;border-radius:10px;touch-action:pan-y"></canvas><div id="m3" style="font-size:13px;opacity:.7;text-align:center"></div>
+<h2 id="gt"></h2><canvas id="fig" width="300" height="240"></canvas><img id="gimg" alt=""><canvas id="fig3" style="display:none;width:100%;aspect-ratio:6/5;border-radius:10px;touch-action:pan-y"></canvas><div id="m3" style="font-size:13px;opacity:.7;text-align:center"></div>
 <div class="card"><b>طريقة الأداء:</b><ol id="gs"></ol>
 <div>💪 العضلات المستهدفة (باللون الأحمر): <span class="red" id="gm"></span></div>
 <div>📱 وضع الكاميرا: <span id="gc"></span></div></div>
 <div class="card">🎯 التكرارات: <input id="tg" class="mi" type="number" value="10" inputmode="numeric"><br>📦 المجموعات: <input id="ss" class="mi" type="number" value="3" inputmode="numeric"><br>⏱️ الراحة (ثانية): <input id="rs" class="mi" type="number" value="45" inputmode="numeric"></div>
 <button class="pri" onclick="startBattle()">ابدأ المعركة ⚔️</button></div>
 
-<div class="s" id="s3"><button onclick="stopCam();show('s2')" style="width:auto;padding:8px 16px">→ رجوع</button>
-<div class="row"><button id="cb" onclick="flip()">🔄 أمامية</button><button id="snd" onclick="toggleSnd()">🔊 الصوت</button></div>
-<div class="mon"><span id="mn"></span><div class="hp"><div id="hpb"></div><div id="hpt"></div></div></div>
-<div class="cam"><video id="v" playsinline muted></video><canvas id="c"></canvas><div class="bar"><div id="pb"></div></div></div>
-<div class="dmg"><span id="d">0</span>الضرر المُنفَّذ<p id="hint"></p></div>
-<button onclick="again()">🔁 جولة جديدة</button></div>
+<div class="s" id="s3">
+<div class="cam"><video id="v" playsinline muted></video><canvas id="c"></canvas></div>
+<div class="top"><button class="ib" onclick="stopCam();show('s2')">→</button><div class="tt"><div id="mn"></div><div class="hp"><div id="hpb"></div><div id="hpt"></div></div></div>
+<button class="ib" id="cb" onclick="flip()">🤳</button><button class="ib" id="trk" onclick="toggleTrk()" title="وجه وأصابع">🖐️</button><button class="ib" id="snd" onclick="toggleSnd()">🔊</button></div>
+<div class="bar"><div id="pb"></div></div>
+<div class="cnt"><div id="d">0</div><div id="of">/ 10</div><div id="fb"></div></div>
+<div id="hint"></div><button class="again" onclick="again()">🔁 جولة جديدة</button></div>
 </div>
 <script>
 const $=id=>document.getElementById(id);
-const ang=(a,b,c)=>{let d=Math.abs((Math.atan2(c.y-b.y,c.x-b.x)-Math.atan2(a.y-b.y,a.x-b.x))*180/Math.PI);return d>180?360-d:d};
-const avg=(L,t)=>{const v=t.filter(s=>s.every(i=>(L[i].visibility??1)>.4));return v.length?v.reduce((s,x)=>s+ang(L[x[0]],L[x[1]],L[x[2]]),0)/v.length:null};
+const ang=(a,b,c)=>{const u=[a.x-b.x,a.y-b.y,(a.z||0)-(b.z||0)],v=[c.x-b.x,c.y-b.y,(c.z||0)-(b.z||0)],m=Math.hypot(...u)*Math.hypot(...v)||1;return Math.acos(Math.max(-1,Math.min(1,(u[0]*v[0]+u[1]*v[1]+u[2]*v[2])/m)))*180/Math.PI};
+const avg=(L,t)=>{const v=t.filter(s=>s.every(i=>(L[i].visibility??1)>.5));return v.length?v.reduce((s,x)=>s+ang(L[x[0]],L[x[1]],L[x[2]]),0)/v.length:null};
 const ELB=[[11,13,15],[12,14,16]],KNEE=[[23,25,27],[24,26,28]],HIP=[[11,23,25],[12,24,26]];
 // وضعيات الشخصية: hp ورك، sh كتف، wr معصم، an كاحل (إحداثيات) — الركب والمرافق تُحسب تلقائياً
 const gp=o=>({hp:o.hp,sh:o.sh,wr:o.wr,an:o.an,wr2:o.wr2||o.wr,an2:o.an2||o.an,eb:o.eb??1,hd:o.hd??0,fa:o.fa??0});
 const HP=[150,125],SH=[150,73],AN=[150,219];
 const EX={
-pushup:{n:"ضغط (Push-up)",m:L=>avg(L,ELB),lo:90,hi:155,h:["انزل أكثر!","ادفع للأعلى!"],
+pushup:{n:"ضغط (Push-up)",m:(L,S)=>avg(S,ELB),lo:90,hi:155,h:["انزل أكثر!","ادفع للأعلى!"],
  A:gp({hp:[127.7,178.2],sh:[172,161],wr:[172,219],an:[40,212],hd:25,fa:75}),B:gp({hp:[132.9,197.8],sh:[184,190],wr:[172,219],an:[40,212],hd:25,fa:75}),
  mus:[0,1,2],mn:"الصدر، الترايسبس، الأكتاف",cam:"ضع الجوال على الأرض من الجانب ليظهر جسمك كاملاً",
  st:["ضع يديك أوسع قليلاً من كتفيك","اجعل جسمك خطاً مستقيماً من الرأس للكعب","انزل حتى ينثني المرفق 90°","ادفع للأعلى حتى يستقيم الذراع"]},
-squat:{n:"سكوات (Squat)",m:L=>avg(L,KNEE),lo:100,hi:160,h:["اجلس أعمق!","قف!"],
+squat:{n:"سكوات (Squat)",m:(L,S)=>avg(S,KNEE),lo:100,hi:160,h:["اجلس أعمق!","قف!"],
  A:gp({hp:HP,sh:SH,wr:[198,80],an:AN}),B:gp({hp:[122,168],sh:[154,127],wr:[200,122],an:AN}),
  mus:[3,4,2],mn:"الفخذ الأمامي، الأرداف، أسفل الظهر",cam:"ضع الجوال أمامك أو من الجانب على بعد مترين",
  st:["قدماك بعرض الكتفين","ادفع الأرداف للخلف كأنك تجلس على كرسي","انزل حتى يوازي فخذاك الأرض","ادفع بكعبيك للأعلى"]},
-lunge:{n:"لانجز (Lunge)",m:L=>avg(L,KNEE),lo:110,hi:160,h:["انزل!","ارتفع!"],
+lunge:{n:"لانجز (Lunge)",m:(L,S)=>avg(S,KNEE),lo:110,hi:160,h:["انزل!","ارتفع!"],
  A:gp({hp:HP,sh:SH,wr:[140,120],an:AN}),B:gp({hp:[140,178],sh:[140,126],wr:[132,172],an:[190,219],an2:[98,206]}),
  mus:[3,4],mn:"الفخذ، الأرداف",cam:"من الجانب على بعد مترين",
  st:["خذ خطوة كبيرة للأمام","انزل حتى تنثني الركبتان 90°","ابقَ الجذع مستقيماً","ادفع للعودة للوقوف"]},
-situp:{n:"بطن (Sit-up)",m:L=>avg(L,HIP),lo:90,hi:140,h:["ارفع جذعك!","استلقِ!"],
+situp:{n:"بطن (Sit-up)",m:(L,S)=>avg(S,HIP),lo:90,hi:140,h:["ارفع جذعك!","استلقِ!"],
  A:gp({hp:[150,211],sh:[98,211],wr:[92,192],an:[182,219],eb:-1}),B:gp({hp:[150,211],sh:[141,161],wr:[147,141],an:[182,219],eb:-1}),
  mus:[2],mn:"عضلات البطن",cam:"من الجانب مع ظهور الجسم كاملاً",
  st:["استلقِ وثبّت قدميك مع ثني الركبتين","ضع يديك خلف رأسك","ارفع جذعك حتى تقترب من ركبتيك","انزل ببطء"]},
-curl:{n:"بايسبس كيرل",m:L=>avg(L,ELB),lo:50,hi:140,h:["اثنِ المرفق!","انزل ببطء!"],
+curl:{n:"بايسبس كيرل",m:(L,S)=>avg(S,ELB),lo:50,hi:140,h:["اثنِ المرفق!","انزل ببطء!"],
  A:gp({hp:HP,sh:SH,wr:[153,131],wr2:[150,131],an:AN}),B:gp({hp:HP,sh:SH,wr:[177,84],wr2:[150,131],an:AN}),
  mus:[0,1],mn:"البايسبس والساعد",cam:"من الجانب أو الأمام، وذراعك ظاهرة",
  st:["قف مستقيماً وثبّت المرفق بجانبك","ارفع اليد نحو الكتف","اعصر العضلة لحظة","انزل ببطء"]},
-press:{n:"ضغط أكتاف",m:L=>avg(L,ELB),lo:95,hi:160,h:["اخفض يديك!","ادفع للأعلى!"],
+press:{n:"ضغط أكتاف",m:(L,S)=>avg(S,ELB),lo:95,hi:160,h:["اخفض يديك!","ادفع للأعلى!"],
  A:gp({hp:HP,sh:SH,wr:[164,48],an:AN}),B:gp({hp:HP,sh:SH,wr:[152,16],an:AN}),
  mus:[0,1],mn:"الأكتاف والترايسبس",cam:"من الأمام، وذراعاك ظاهرتان",
  st:["ابدأ بيديك عند مستوى الكتفين","ادفع للأعلى حتى تستقيم الذراعان","لا تقوّس ظهرك","انزل ببطء"]},
@@ -175,58 +188,91 @@ function figLoop(t){
 requestAnimationFrame(figLoop);
 // ===== الصوت =====
 let snd=true,ac;
-function toggleSnd(){snd=!snd;$("snd").textContent=snd?"🔊 الصوت":"🔇 صامت"}
+function toggleSnd(){snd=!snd;$("snd").textContent=snd?"🔊":"🔇"}
 function beep(f,d=.12,at=0){if(!snd)return;ac=ac||new(window.AudioContext||window.webkitAudioContext)();const o=ac.createOscillator(),g=ac.createGain();o.frequency.value=f;o.connect(g);g.connect(ac.destination);g.gain.value=.2;const t=ac.currentTime+at;o.start(t);o.stop(t+d)}
 function say(t){if(!snd||!window.speechSynthesis)return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang="ar-SA";speechSynthesis.speak(u)}
 // ===== المعركة =====
 const MON=["غوبلن","أورك","ذئب","تنين"],cl=(v,a,b)=>Math.max(a,Math.min(b,v));
 let level=0,hp=0,max=0,total=0,state=null,lm,run=false,last=-1,Lib,facing="user",done=false,lid=0,sets=3,restS=45,curSet=1,rt=null,di=0;
-function spawn(){max=hp=target;total=0;state=null;done=false;$("mn").textContent=MON[level%4]+" — مجموعة "+curSet+" من "+sets;drw()}
-function drw(){$("hpb").style.width=hp/max*100+"%";$("hpt").textContent=hp+" / "+max;$("d").textContent=total}
+function spawn(){max=hp=target;total=0;state=null;done=false;scs=[];acc=null;$("mn").textContent=MON[level%4]+" — مجموعة "+curSet+" من "+sets;drw()}
+function drw(){$("of").textContent="/ "+max;$("hpb").style.width=hp/max*100+"%";$("hpt").textContent=hp+" / "+max;$("d").textContent=total}
 function stopCam(){run=false;clearInterval(rt);const v=$("v");v.srcObject?.getTracks().forEach(t=>t.stop());v.srcObject=null}
 function again(){clearInterval(rt);curSet=1;level++;spawn();if(run)$("hint").textContent="ابدأ!"}
 async function openCam(){
  const v=$("v");v.srcObject?.getTracks().forEach(t=>t.stop());v.srcObject=null;await new Promise(r=>setTimeout(r,250));
  let s,err;
- for(const c of [{facingMode:{exact:facing}},{facingMode:facing}]){try{s=await navigator.mediaDevices.getUserMedia({video:c});break}catch(e){err=e}}
+ for(const c of [{facingMode:{exact:facing},width:{ideal:720},height:{ideal:1280}},{facingMode:facing,width:{ideal:720},height:{ideal:1280}}]){try{s=await navigator.mediaDevices.getUserMedia({video:c});break}catch(e){err=e}}
  if(!s){try{const d=(await navigator.mediaDevices.enumerateDevices()).filter(x=>x.kind==="videoinput");if(d.length>1){di=(di+1)%d.length;s=await navigator.mediaDevices.getUserMedia({video:{deviceId:{exact:d[di].deviceId}}})}}catch(e){err=e}}
  if(!s)throw err||new Error("تعذّر فتح الكاميرا");
  v.srcObject=s;await v.play();const f=s.getVideoTracks()[0].getSettings().facingMode;if(f)facing=f==="environment"?"environment":"user";
- $("c").style.transform=facing==="user"?"scaleX(-1)":"none";$("cb").textContent="🔄 "+(facing==="user"?"أمامية":"خلفية");last=-1;run=true;loop(++lid)}
+ $("c").style.transform=facing==="user"?"scaleX(-1)":"none";$("cb").textContent=facing==="user"?"🤳":"📷";last=-1;run=true;loop(++lid)}
 async function flip(){
- facing=facing==="user"?"environment":"user";$("cb").textContent="🔄 "+(facing==="user"?"أمامية":"خلفية");if(!run)return;
+ facing=facing==="user"?"environment":"user";$("cb").textContent=facing==="user"?"🤳":"📷";if(!run)return;
  run=false;try{await openCam()}catch(e){facing=facing==="user"?"environment":"user";$("hint").textContent="⚠️ تعذّر تبديل الكاميرا: "+e.message;try{await openCam()}catch(_){}}}
+let FS_,HL=null,FL=null,trk=true,fr=0,LH=null,LF=null,SL=null,SW=null;
+async function mkTask(C,path,o){const b=d=>C.createFromOptions(FS_,{baseOptions:{modelAssetPath:"https://storage.googleapis.com/mediapipe-models/"+path,delegate:d},runningMode:"VIDEO",...o});try{return await b("GPU")}catch(_){return await b("CPU")}}
+async function loadExtra(){try{if(!HL)HL=await mkTask(Lib.HandLandmarker,"hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task",{numHands:2});if(!FL)FL=await mkTask(Lib.FaceLandmarker,"face_landmarker/face_landmarker/float16/1/face_landmarker.task",{numFaces:1})}catch(e){trk=false;$("trk").style.opacity=.4}}
+function toggleTrk(){trk=!trk;$("trk").style.opacity=trk?1:.4;LH=LF=null;if(trk&&Lib)loadExtra()}
+const sm=(n,o,a=.55)=>o?n.map((p,i)=>({x:o[i].x+(p.x-o[i].x)*a,y:o[i].y+(p.y-o[i].y)*a,z:(o[i].z||0)+((p.z||0)-(o[i].z||0))*a,visibility:p.visibility})):n;
 async function startBattle(){
  target=cl(parseInt($("tg").value)||10,1,500);sets=cl(parseInt($("ss").value)||3,1,20);restS=cl(parseInt($("rs").value)||45,5,300);curSet=1;level=0;spawn();show("s3");$("hint").textContent="جارٍ تحميل نموذج التتبع...";
  try{
   if(!window.isSecureContext)throw new Error("الكاميرا تحتاج رابط https");
   if(!navigator.mediaDevices)throw new Error("المتصفح لا يدعم الكاميرا");
-  if(!lm){Lib=await import("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/+esm");
-   const f=await Lib.FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm");
-   const mk=d=>Lib.PoseLandmarker.createFromOptions(f,{baseOptions:{modelAssetPath:"https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task",delegate:d},runningMode:"VIDEO",numPoses:1});
-   try{lm=await mk("GPU")}catch(_){lm=await mk("CPU")}}
-  await openCam();$("hint").textContent="ابدأ التمرين!";beep(600);
+  if(!Lib){Lib=await import("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/+esm");FS_=await Lib.FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm")}
+  if(!lm)lm=await mkTask(Lib.PoseLandmarker,"pose_landmarker_full/float16/1/pose_landmarker_full.task",{numPoses:1,minPoseDetectionConfidence:.6,minPosePresenceConfidence:.6,minTrackingConfidence:.6});
+  SL=SW=null;await openCam();$("hint").textContent="ابدأ التمرين!";beep(600);if(trk)loadExtra();
  }catch(e){$("hint").textContent="⚠️ "+e.message}}
 function loop(id){
  if(!run||id!==lid)return;const v=$("v"),c=$("c"),x=c.getContext("2d");
- if(v.videoWidth&&v.currentTime!==last){last=v.currentTime;c.width=v.videoWidth;c.height=v.videoHeight;x.drawImage(v,0,0);
-  const r=lm.detectForVideo(v,performance.now());
-  if(r.landmarks[0]){const L=r.landmarks[0],du=new Lib.DrawingUtils(x);
-   du.drawConnectors(L,Lib.PoseLandmarker.POSE_CONNECTIONS,{color:"#4c8dff",lineWidth:4});du.drawLandmarks(L,{color:"#9cc0ff",radius:4});step(L)}}
+ if(v.videoWidth&&v.currentTime!==last){last=v.currentTime;c.width=v.videoWidth;c.height=v.videoHeight;x.drawImage(v,0,0);fr++;const ts=performance.now(),du=new Lib.DrawingUtils(x);
+  const r=lm.detectForVideo(v,ts);
+  if(trk&&HL&&FL){try{if(fr%3===1)LH=HL.detectForVideo(v,ts).landmarks;else if(fr%3===2)LF=FL.detectForVideo(v,ts).faceLandmarks}catch(_){}}
+  LH?.forEach(h=>{du.drawConnectors(h,Lib.HandLandmarker.HAND_CONNECTIONS,{color:"#3ddc84",lineWidth:3});du.drawLandmarks(h,{color:"#fff",radius:2})});
+  LF?.forEach(f=>du.drawConnectors(f,Lib.FaceLandmarker.FACE_LANDMARKS_CONTOURS,{color:"#ffd27a",lineWidth:1.5}));
+  if(r.landmarks[0]){SL=sm(r.landmarks[0],SL);SW=r.worldLandmarks?.[0]?sm(r.worldLandmarks[0],SW):null;
+   du.drawConnectors(SL,Lib.PoseLandmarker.POSE_CONNECTIONS,{color:"#4c8dff",lineWidth:5});du.drawLandmarks(SL,{color:"#fff",radius:3});step(SL,SW)}else SL=SW=null}
  requestAnimationFrame(()=>loop(id))}
-function step(L){
- if(done)return;const e=EX[cur],m=e.m(L);if(m==null)return;
- $("pb").style.height=cl((e.hi-m)/(e.hi-e.lo),0,1)*100+"%";
- if(m>e.hi){if(state==="low")rep();state="high"}else if(m<e.lo){if(state!=="low")beep(330,.05);state="low"}
+let acc=null,tHigh=0;
+function step(L,W){
+ if(done)return;const e=EX[cur],S=W||L.map(p=>({x:p.x,y:p.y,z:0,visibility:p.visibility})),m=e.m(L,S);if(m==null)return;
+ $("pb").style.height=cl((e.hi-m)/(e.hi-e.lo),0,1)*100+"%";const now=performance.now();
+ let x=null;try{x=FORM[cur].fm(S,L)}catch(_){}
+ if(m<=e.hi||acc){if(!acc)acc={mm:m,mx:m,mn:[],mx0:-1e9};acc.mm=Math.min(acc.mm,m);acc.mx=Math.max(acc.mx,m);
+  if(x){acc.mn[0]=Math.min(acc.mn[0]??1e9,x[0]);acc.mx0=Math.max(acc.mx0,x[0])}}
+ if(m>e.hi){if(state==="low"){const a=acc;rep(a,tHigh?(now-tHigh)/1000:0)}state="high";acc=null;tHigh=now}
+ else if(m<e.lo){if(state!=="low")beep(330,.05);state="low"}
  if(state&&!done)$("hint").textContent=state==="low"?e.h[1]:e.h[0]}
-function rep(){
+let scs=[];
+function showFb(j){const f=$("fb");f.textContent="⭐ "+j.sc+" · "+(j.tip||j.ok);f.style.background=j.sc>=85?"#1f9d55cc":j.sc>=65?"#c7961acc":"#c0392bcc";f.style.opacity=1;clearTimeout(showFb.t);showFb.t=setTimeout(()=>f.style.opacity=0,3500)}
+function rep(a,dur){
  total++;hp--;navigator.vibrate?.(40);drw();
- if(hp>0){beep(880,.1);say(String(total));return}
- done=true;logSet(cur,target);beep(523,.15);beep(659,.15,.15);beep(784,.3,.3);
- if(curSet>=sets){say("أحسنت! أنهيت التمرين");$("hint").textContent="🏆 أنهيت "+sets+" مجموعات! اضغط جولة جديدة";return}
- let n=restS;say("راحة");
- const tick=()=>{$("hint").textContent="😮‍💨 راحة: "+n+" ثانية";if(n>0&&n<=3)beep(660,.08);if(n--<=0){clearInterval(rt);curSet++;level++;spawn();beep(900,.2);say("ابدأ");$("hint").textContent="المجموعة "+curSet+" — ابدأ!"}};
+ let j=null;if(a){try{j=judge(cur,a,dur)}catch(_){}}
+ if(j){scs.push(j.sc);showFb(j)}
+ if(hp>0){beep(880,.1);say(String(total)+(j&&j.tip?"، "+j.tip:total%5===0&&j&&j.sc>=85?"، ممتاز":""));return}
+ done=true;const avg=scs.length?Math.round(scs.reduce((x,y)=>x+y,0)/scs.length):0;logSet(cur,target,avg);beep(523,.15);beep(659,.15,.15);beep(784,.3,.3);
+ if(curSet>=sets){say("أحسنت! أنهيت التمرين بمتوسط جودة "+avg);$("hint").textContent="🏆 أنهيت "+sets+" مجموعات! الجودة "+avg+"%";return}
+ let n=restS;say("راحة. جودة المجموعة "+avg);
+ const tick=()=>{$("hint").textContent="😮‍💨 راحة: "+n+" ثانية — الجودة "+avg+"%";if(n>0&&n<=3)beep(660,.08);if(n--<=0){clearInterval(rt);curSet++;level++;spawn();beep(900,.2);say("ابدأ");$("hint").textContent="المجموعة "+curSet+" — ابدأ!"}};
  tick();rt=setInterval(tick,1000)}
+// ===== المدرب الذكي: تقييم شكل الأداء =====
+const mid=(a,b)=>({x:(a.x+b.x)/2,y:(a.y+b.y)/2,z:((a.z||0)+(b.z||0))/2,visibility:Math.min(a.visibility??1,b.visibility??1)});
+const lean=S=>{const a=mid(S[11],S[12]),b=mid(S[23],S[24]),dx=a.x-b.x,dz=(a.z||0)-(b.z||0),dy=a.y-b.y;return Math.atan2(Math.hypot(dx,dz),Math.abs(dy))*180/Math.PI};
+const FORM={
+ pushup:{fm:S=>[ang(mid(S[11],S[12]),mid(S[23],S[24]),mid(S[27],S[28]))],
+  jg:a=>[[a.mn[0]<165?(165-a.mn[0])*1.5:0,"اجعل جسمك خطاً مستقيماً"],[a.mx<150?(150-a.mx)*.8:0,"افرد ذراعيك بالكامل"],[a.mm>80?a.mm-80:0,"انزل أكثر"]]},
+ squat:{fm:S=>[lean(S)],jg:a=>[[a.mm>85?(a.mm-85)*1.2:0,"انزل أعمق"],[a.mx0>50?(a.mx0-50)*1.2:0,"ارفع صدرك، جذعك مائل كثيراً"],[a.mx<155?155-a.mx:0,"قف بشكل كامل"]]},
+ lunge:{fm:S=>[lean(S)],jg:a=>[[a.mm>100?(a.mm-100)*1.2:0,"انزل أكثر"],[a.mx0>25?(a.mx0-25)*1.5:0,"أبقِ جذعك مستقيماً"]]},
+ situp:{fm:S=>[0],jg:a=>[[a.mm>70?a.mm-70:0,"ارفع جذعك أكثر"],[a.mx<150?(150-a.mx)*.5:0,"استلقِ بالكامل بين التكرارات"]]},
+ curl:{fm:S=>[(ang(S[23],S[11],S[13])+ang(S[24],S[12],S[14]))/2],jg:a=>[[a.mm>45?(a.mm-45)*1.2:0,"اثنِ ذراعك أكثر"],[a.mx0>35?(a.mx0-35)*1.5:0,"ثبّت مرفقك بجانبك ولا تتأرجح"],[a.mx<145?(145-a.mx)*.8:0,"افرد ذراعك بالكامل"]]},
+ press:{fm:S=>[lean(S)],jg:a=>[[a.mx<160?(160-a.mx)*1.5:0,"ادفع حتى يستقيم الذراع"],[a.mx0>15?(a.mx0-15)*2:0,"لا تقوّس ظهرك"]]},
+ jack:{fm:(S,L)=>[Math.abs(L[27].x-L[28].x)/(Math.abs(L[11].x-L[12].x)||1)],jg:a=>[[a.mm>-5?(a.mm+5)*1.5:0,"ارفع ذراعيك أعلى"],[a.mx0<1.4?(1.4-a.mx0)*40:0,"باعد قدميك أكثر"]]}
+};
+function judge(k,a,dur){
+ const P=FORM[k].jg(a);if(dur&&dur<.9)P.push([(.9-dur)*40,"ببطء أكثر وتحكّم في الحركة"]);
+ let tot=0,best=[0,""];P.forEach(p=>{tot+=p[0];if(p[0]>best[0])best=p});
+ const sc=Math.max(30,Math.round(100-Math.min(70,tot)));
+ return{sc,tip:best[0]>8?best[1]:"",ok:sc>=90?"ممتاز":"جيد"}}
 // ===== الصفحة الرئيسية والسجل =====
 const META={pushup:["صدر","💪"],squat:["أرجل","🦵"],lunge:["أرجل","🏃"],situp:["بطن","🔥"],curl:["ذراع","💪"],press:["أكتاف","🏋️"],jack:["كارديو","⚡"]};
 let flt="الكل";
@@ -235,14 +281,14 @@ function renderGrid(){$("grid").innerHTML="";Object.entries(EX).filter(([k])=>fl
 ["الكل","صدر","أرجل","بطن","أكتاف","ذراع","كارديو"].forEach(c=>{const b=document.createElement("button");b.className="chip"+(c===flt?" on":"");b.textContent=c;
  b.onclick=()=>{flt=c;document.querySelectorAll(".chip").forEach(x=>x.classList.toggle("on",x===b));renderGrid()};$("chips").append(b)});
 const LSG=()=>{try{return JSON.parse(localStorage.getItem("fb_log")||"[]")}catch(_){return[]}};
-function logSet(ex,reps){const l=LSG();l.push({d:new Date().toISOString().slice(0,10),ex,reps});try{localStorage.setItem("fb_log",JSON.stringify(l.slice(-500)))}catch(_){}}
+function logSet(ex,reps,sc){const l=LSG();l.push({d:new Date().toISOString().slice(0,10),ex,reps,sc});try{localStorage.setItem("fb_log",JSON.stringify(l.slice(-500)))}catch(_){}}
 function stats(){
  const l=LSG(),t=new Date().toISOString().slice(0,10),today=l.filter(x=>x.d===t).reduce((a,x)=>a+x.reps,0),days=new Set(l.map(x=>x.d));
  let streak=0,d=new Date();if(!days.has(t))d.setDate(d.getDate()-1);while(days.has(d.toISOString().slice(0,10))){streak++;d.setDate(d.getDate()-1)}
  let g=50;try{g=parseInt(localStorage.fb_goal)||50}catch(_){}$("goal").value=g;
  $("st1").textContent=today;$("st2").textContent=streak;$("st3").textContent=l.reduce((a,x)=>a+x.reps,0);$("st4").textContent=l.length;
  $("gb").style.width=Math.min(100,today/g*100)+"%";$("gl").textContent=today+" / "+g;
- if(l.length)$("hist").innerHTML=l.slice(-5).reverse().map(x=>"• "+(EX[x.ex]?.n||x.ex)+" — "+x.reps+" تكرار ("+x.d+")").join("<br>")}
+ if(l.length)$("hist").innerHTML=l.slice(-5).reverse().map(x=>"• "+(EX[x.ex]?.n||x.ex)+" — "+x.reps+" تكرار"+(x.sc?" · جودة "+x.sc+"%":"")+" ("+x.d+")").join("<br>")}
 function bmi(){const w=+$("bw").value,h=+$("bh").value/100;if(!w||!h)return;const b=w/h/h;$("br").textContent="كتلة جسمك: "+b.toFixed(1)+" — "+(b<18.5?"نحافة":b<25?"وزن طبيعي":b<30?"وزن زائد":"سمنة")}
 renderGrid();stats();
 // ===== شاشة البداية السينمائية =====
@@ -254,7 +300,7 @@ function splash(t){
  const k=Math.min(1,el/2),g=sx.createRadialGradient(W/2,Hh*.5,10,W/2,Hh*.5,Hh*.75);g.addColorStop(0,`rgba(${110+90*k},20,35,${.5+.15*Math.sin(el*3)})`);g.addColorStop(1,"#06070b");sx.fillStyle=g;sx.fillRect(0,0,W,Hh);
  sx.save();sx.translate(W/2,Hh*.45);sx.rotate(el*.35);sx.fillStyle="rgba(255,70,70,.06)";for(let i=0;i<8;i++){sx.beginPath();sx.moveTo(0,0);sx.lineTo(-50,-Hh);sx.lineTo(50,-Hh);sx.fill();sx.rotate(Math.PI/4)}sx.restore();
  const p=Math.min(1,el/2.2),e=(1-Math.cos(Math.PI*p))/2,z=Math.min(Hh*.5/190,W*.9/260)*(.8+.35*e);
- if(use3d&&!bad3){try{V3(SPX,mixp(SPX.A,SPX.B,e),.25+.75*e,{el,z:4.8-1.3*e})}catch(_){bad3=true}}
+ if(use3d&&!bad3){try{V3(SPX,mixp(SPX.A,SPX.B,e),.25+.75*e,{el,z:620-95*e})}catch(_){bad3=true}}
  if(!use3d||bad3){
  sx.save();sx.translate(W/2-150*z,Hh*.42-130*z);sx.scale(z,z*(1+.012*Math.sin(el*5)));sx.shadowColor="rgba(255,60,70,.7)";sx.shadowBlur=26;
  fc=sx;figure(SPX,mixp(SPX.A,SPX.B,e),.25+.75*e);fc=fc0;sx.restore();
@@ -262,65 +308,95 @@ function splash(t){
  if(el>4.2&&(use3d&&!bad3?(t-tR)/1000>3.5:(f3||bad3||el>9)))endSplash();requestAnimationFrame(splash)}
 requestAnimationFrame(splash);
 
-// ===== مجسم ثلاثي الأبعاد (Mixamo X Bot) =====
-let V3=null,use3d=false,ld3=false,yawD=0,tR=0,bad3=false,f3=false;
+// ===== محرك المجسم ثلاثي الأبعاد (WebGL2 مباشر بدون مكتبات) =====
+let MD=null,G3=[],V3=null,use3d=false,ld3=false,yawD=0,tR=0,bad3=false,f3=false;
+const qm=(a,b)=>[a[3]*b[0]+a[0]*b[3]+a[1]*b[2]-a[2]*b[1],a[3]*b[1]-a[0]*b[2]+a[1]*b[3]+a[2]*b[0],a[3]*b[2]+a[0]*b[1]-a[1]*b[0]+a[2]*b[3],a[3]*b[3]-a[0]*b[0]-a[1]*b[1]-a[2]*b[2]];
+const qv=(q,v)=>{const[x,y,z,w]=q,tx=2*(y*v[2]-z*v[1]),ty=2*(z*v[0]-x*v[2]),tz=2*(x*v[1]-y*v[0]);return[v[0]+w*tx+y*tz-z*ty,v[1]+w*ty+z*tx-x*tz,v[2]+w*tz+x*ty-y*tx]};
+const nz=v=>{const l=Math.hypot(v[0],v[1],v[2])||1;return[v[0]/l,v[1]/l,v[2]/l]};
+const fromUV=(a,b)=>{const d=a[0]*b[0]+a[1]*b[1]+a[2]*b[2];if(d<-.999999){let ax=[a[1]*0-a[2]*0,a[2]*1-a[0]*0,a[0]*0-a[1]*1];if(Math.hypot(...ax)<1e-3)ax=[0,0,1];ax=nz(ax);return[ax[0],ax[1],ax[2],0]}
+ const c=[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]],q=[c[0],c[1],c[2],1+d],l=Math.hypot(...q);return q.map(x=>x/l)};
+const CH={Hips:"Spine",Spine:"Spine1",Spine1:"Spine2",Spine2:"Neck",Neck:"Head",Head:"HeadTop_End",RightArm:"RightForeArm",RightForeArm:"RightHand",RightHand:"RightHandMiddle1",LeftArm:"LeftForeArm",LeftForeArm:"LeftHand",LeftHand:"LeftHandMiddle1",RightUpLeg:"RightLeg",RightLeg:"RightFoot",RightFoot:"RightToeBase",LeftUpLeg:"LeftLeg",LeftLeg:"LeftFoot",LeftFoot:"LeftToeBase"};
+function rig2d(e,Z){const mir=e.mir,sx=mir?20:0,hx=mir?9:0;let ux=Z.sh[0]-Z.hp[0],uy=Z.sh[1]-Z.hp[1];const ul=Math.hypot(ux,uy);ux/=ul;uy/=ul;
+ const r=Z.hd*Math.PI/180,vx=ux*Math.cos(r)-uy*Math.sin(r),vy=ux*Math.sin(r)+uy*Math.cos(r),aS=[Z.sh[0]+sx,Z.sh[1]],lS=[Z.hp[0]+hx,Z.hp[1]];
+ const arm=w=>{const[E,W]=ik(aS,w,32,28,Z.eb);return[aS,E,W]},leg=a=>{const[K,A]=ik(lS,a,48,46,-1);return[lS,K,A]};
+ return{A1:arm(Z.wr),A2:arm(Z.wr2),L1:leg(Z.an),L2:leg(Z.an2),u:[ux,uy],v:[vx,vy]}}
+function solve(e,Z,p){
+ const R=rig2d(e,Z),mir=!!e.mir,fz=MD.fz,rs=MD.rs,nearR=rs*fz<0,k=182/186,B=MD.bones,n=B.length;
+ const D=(a,b,lat)=>{const dx=b[0]-a[0],dy=b[1]-a[1]+1e-6;return nz(mir?[lat*dx,-dy,0]:[0,-dy,fz*dx+1e-6])};
+ const tg={},tor=D([0,0],R.u,0),hd=D([0,0],R.v,0);
+ ["Hips","Spine","Spine1","Spine2"].forEach(q=>tg[q]=tor);tg.Neck=tg.Head=hd;
+ for(const s of ["Right","Left"]){const lat=(s==="Right"?1:-1)*rs,near=mir||((s==="Right")===nearR),A=near?R.A1:R.A2,L=near?R.L1:R.L2,f=D(A[1],A[2],lat),fr=Z.fa*Math.PI/180;
+  tg[s+"Arm"]=D(A[0],A[1],lat);tg[s+"ForeArm"]=f;tg[s+"Hand"]=f;tg[s+"UpLeg"]=D(L[0],L[1],lat);tg[s+"Leg"]=D(L[1],L[2],lat);tg[s+"Foot"]=Z.fa<10?MD.rdir[MD.idx[s+"Foot"]]:nz([0,-Math.sin(fr),fz*Math.cos(fr)])}
+ const Dq=[],P=[];
+ for(let i=0;i<n;i++){const b=B[i],pa=b.parent;
+  Dq[i]=tg[b.n]?fromUV(MD.rdir[i],tg[b.n]):(pa>=0?Dq[pa]:[0,0,0,1]);
+  P[i]=pa<0?[0,(226-Z.hp[1])*k,fz*(Z.hp[0]-150)*k]:(o=>[P[pa][0]+o[0],P[pa][1]+o[1],P[pa][2]+o[2]])(qv(Dq[pa],[b.pos[0]-B[pa].pos[0],b.pos[1]-B[pa].pos[1],b.pos[2]-B[pa].pos[2]]))}
+ let mn=1e9;for(const q of ["RightToe_End","LeftToe_End"])mn=Math.min(mn,P[MD.idx[q]][1]);for(const q of ["RightHand","LeftHand"])mn=Math.min(mn,P[MD.idx[q]][1]-5);
+ const Q=new Float32Array(n*4),T=new Float32Array(n*4);
+ for(let i=0;i<n;i++){P[i][1]-=mn;const r=qv(Dq[i],B[i].pos);Q.set(Dq[i],i*4);T.set([P[i][0]-r[0],P[i][1]-r[1],P[i][2]-r[2],0],i*4)}
+ const M=new Set(e.mus),mus=[0,1,2,3,4].map(i=>M.has(i)?.1+.85*p:0);
+ return{Q,T,mus,yaw:mir?(fz>0?0:Math.PI):fz*Math.PI/2}}
+const m4=(a,b)=>{const o=new Float32Array(16);for(let c=0;c<4;c++)for(let r=0;r<4;r++){let s=0;for(let k=0;k<4;k++)s+=a[k*4+r]*b[c*4+k];o[c*4+r]=s}return o};
+const persp=(f,a,n,fa)=>{const t=1/Math.tan(f/2);return new Float32Array([t/a,0,0,0,0,t,0,0,0,0,(fa+n)/(n-fa),-1,0,0,2*fa*n/(n-fa),0])};
+const look=(e,c)=>{const z=nz([e[0]-c[0],e[1]-c[1],e[2]-c[2]]),x=nz([z[2],0,-z[0]]),y=[z[1]*x[2]-z[2]*x[1],z[2]*x[0]-z[0]*x[2],z[0]*x[1]-z[1]*x[0]];
+ return new Float32Array([x[0],y[0],z[0],0,x[1],y[1],z[1],0,x[2],y[2],z[2],0,-(x[0]*e[0]+x[1]*e[1]+x[2]*e[2]),-(y[0]*e[0]+y[1]*e[1]+y[2]*e[2]),-(z[0]*e[0]+z[1]*e[1]+z[2]*e[2]),1])};
+function mkGL(cv){
+ const gl=cv.getContext("webgl2",{antialias:true,alpha:true,premultipliedAlpha:true});if(!gl)throw new Error("WebGL2 غير مدعوم في هذا المتصفح");
+ const NB=MD.bones.length;
+ const VS=`#version 300 es
+precision highp float;
+in vec3 aP;in vec4 aN;in vec4 aJ;in vec4 aW;
+uniform vec4 uQ[${NB}];uniform vec4 uT[${NB}];uniform mat4 uVP;uniform vec2 uYaw;uniform float uMus[5];
+out vec3 vN;out vec3 vW;out float vH;
+vec3 qr(vec4 q,vec3 v){return v+2.0*cross(q.xyz,cross(q.xyz,v)+q.w*v);}
+void main(){vec3 p=vec3(0.0),n=vec3(0.0);
+ for(int i=0;i<4;i++){int j=int(aJ[i]+0.5);float w=aW[i];p+=w*(qr(uQ[j],aP)+uT[j].xyz);n+=w*qr(uQ[j],aN.xyz);}
+ p=vec3(uYaw.y*p.x+uYaw.x*p.z,p.y,-uYaw.x*p.x+uYaw.y*p.z);n=vec3(uYaw.y*n.x+uYaw.x*n.z,n.y,-uYaw.x*n.x+uYaw.y*n.z);
+ int pid=int(floor(aN.w*127.0+0.5));vH=pid>=0?uMus[pid]:0.0;vN=normalize(n);vW=p;gl_Position=uVP*vec4(p,1.0);}`;
+ const FS=`#version 300 es
+precision highp float;
+in vec3 vN;in vec3 vW;in float vH;uniform vec3 uCam;uniform vec3 uBase;out vec4 o;
+void main(){vec3 n=normalize(vN),V=normalize(uCam-vW),key=normalize(vec3(.5,.8,.9)),r1=normalize(vec3(-.8,.4,-.7)),r2=normalize(vec3(.8,.3,-.6));
+ float d=max(dot(n,key),0.0),fr=pow(1.0-max(dot(n,V),0.0),2.6);vec3 base=mix(uBase,vec3(.95,.12,.2),vH);
+ vec3 c=base*(.25+.85*d);c+=vec3(1.0,.15,.25)*fr*(.5+.9*max(dot(n,r1),0.0));c+=vec3(.25,.5,1.0)*fr*.6*max(dot(n,r2),0.0);
+ c+=vec3(.6)*pow(max(dot(n,normalize(key+V)),0.0),40.0)*(.3+vH)+vec3(1.0,.1,.2)*vH*.22;o=vec4(c,1.0);}`;
+ const FV=`#version 300 es
+in vec3 aP;uniform mat4 uVP;out vec3 vW;void main(){vW=aP;gl_Position=uVP*vec4(aP,1.0);}`;
+ const FF=`#version 300 es
+precision highp float;in vec3 vW;out vec4 o;void main(){float d=length(vW.xz)/170.0,a=1.0-smoothstep(.65,1.0,d);vec3 c=mix(vec3(.2,.2,.25),vec3(.03,.03,.04),smoothstep(0.0,1.0,d));o=vec4(c*a,a);}`;
+ const sh=(t,src)=>{const s=gl.createShader(t);gl.shaderSource(s,src);gl.compileShader(s);if(!gl.getShaderParameter(s,gl.COMPILE_STATUS))throw new Error(gl.getShaderInfoLog(s));return s};
+ const prog=(v,f)=>{const p=gl.createProgram();gl.attachShader(p,sh(gl.VERTEX_SHADER,v));gl.attachShader(p,sh(gl.FRAGMENT_SHADER,f));gl.linkProgram(p);if(!gl.getProgramParameter(p,gl.LINK_STATUS))throw new Error(gl.getProgramInfoLog(p));return p};
+ const P=prog(VS,FS),PF=prog(FV,FF),U=n=>gl.getUniformLocation(P,n);
+ const meshes=MD.meshes.map(m=>{const vao=gl.createVertexArray();gl.bindVertexArray(vao);const vb=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,vb);
+  gl.bufferData(gl.ARRAY_BUFFER,new Uint8Array(MD.buf,MD.base+m.off,m.nv*24),gl.STATIC_DRAW);
+  const at=(nm,sz,ty,nr,off)=>{const l=gl.getAttribLocation(P,nm);gl.enableVertexAttribArray(l);gl.vertexAttribPointer(l,sz,ty,nr,24,off)};
+  at("aP",3,gl.FLOAT,false,0);at("aN",4,gl.BYTE,true,12);at("aJ",4,gl.UNSIGNED_BYTE,false,16);at("aW",4,gl.UNSIGNED_BYTE,true,20);
+  const ib=gl.createBuffer();gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,ib);gl.bufferData(gl.ELEMENT_ARRAY_BUFFER,new Uint8Array(MD.buf,MD.base+m.off+m.nv*24,m.ni*2),gl.STATIC_DRAW);
+  return{vao,n:m.ni,joint:/Joints/.test(m.name)}});
+ const fv=[0,.1,0];for(let i=0;i<=48;i++){const a=i/48*6.2832;fv.push(Math.cos(a)*170,.1,Math.sin(a)*170)}
+ const fao=gl.createVertexArray();gl.bindVertexArray(fao);const fb=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,fb);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(fv),gl.STATIC_DRAW);
+ const fl=gl.getAttribLocation(PF,"aP");gl.enableVertexAttribArray(fl);gl.vertexAttribPointer(fl,3,gl.FLOAT,false,0,0);
+ return(S,yaw,eye,tgt,bg)=>{
+  const w=cv.clientWidth,h=cv.clientHeight;if(!w||!h)return;const dpr=Math.min(2,devicePixelRatio||1),W=w*dpr|0,H=h*dpr|0;if(cv.width!==W||cv.height!==H){cv.width=W;cv.height=H}
+  gl.viewport(0,0,W,H);gl.clearColor(...bg);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);gl.enable(gl.DEPTH_TEST);gl.enable(gl.BLEND);gl.blendFunc(gl.ONE,gl.ONE_MINUS_SRC_ALPHA);
+  const VP=m4(persp(32*Math.PI/180,w/h,10,4000),look(eye,tgt));
+  gl.useProgram(PF);gl.uniformMatrix4fv(gl.getUniformLocation(PF,"uVP"),false,VP);gl.bindVertexArray(fao);gl.drawArrays(gl.TRIANGLE_FAN,0,50);
+  gl.useProgram(P);gl.uniformMatrix4fv(U("uVP"),false,VP);gl.uniform4fv(U("uQ"),S.Q);gl.uniform4fv(U("uT"),S.T);gl.uniform1fv(U("uMus"),S.mus);
+  gl.uniform2f(U("uYaw"),Math.sin(yaw),Math.cos(yaw));gl.uniform3f(U("uCam"),...eye);
+  for(const m of meshes){gl.uniform3f(U("uBase"),...(m.joint?[.06,.065,.08]:[.28,.3,.36]));gl.bindVertexArray(m.vao);gl.drawElements(gl.TRIANGLES,m.n,gl.UNSIGNED_SHORT,0)}}}
 async function init3D(){
  if(ld3)return;ld3=true;const st=$("m3");st.textContent="⏳ جارٍ تحميل المجسم ثلاثي الأبعاد...";
  try{
-  const T=await import("three"),{FBXLoader}=await import("three/addons/loaders/FBXLoader.js");
-  let obj,lastErr;
-  for(const f of ["xbot.fbx","X_Bot.fbx","model/xbot.fbx","X_Bot__1_.fbx"]){try{obj=await new Promise((ok,no)=>new FBXLoader().load(f,ok,undefined,no));break}catch(e){lastErr=e}}
-  if(!obj)throw new Error("لم أجد ملف xbot.fbx بجانب index.html");
-  const rsp=new T.WebGLRenderer({canvas:$("sc3"),antialias:true,alpha:true});rsp.setPixelRatio(Math.min(2,devicePixelRatio));rsp.setClearColor(0,0);let spw=0,sph=0;const cam2=new T.PerspectiveCamera(35,.6,.1,50);
-  const cv=$("fig3"),rn=new T.WebGLRenderer({canvas:cv,antialias:true});rn.setPixelRatio(Math.min(2,devicePixelRatio));rn.setClearColor(0x23262e);
-  const sc=new T.Scene(),cam=new T.PerspectiveCamera(32,1.25,.1,50);
-  sc.add(new T.HemisphereLight(0xbcc6ff,0x20222a,1));
-  const L=(c,i,x,y,z)=>{const l=new T.DirectionalLight(c,i);l.position.set(x,y,z);sc.add(l)};L(0xffffff,2.2,2,3,3);L(0xff2a44,3.2,-3,2,-3);L(0x4c8dff,1.6,3,1,-2);
-  const fl=new T.Mesh(new T.CircleGeometry(1.6,48).rotateX(-Math.PI/2),new T.MeshBasicMaterial({color:0x14161b}));fl.position.y=-.005;sc.add(fl);
-  const stage=new T.Group();sc.add(stage);stage.add(obj);stage.updateMatrixWorld(true);
-  const bones={};obj.traverse(o=>{if(o.isBone)bones[o.name.replace(/[^A-Za-z0-9_]/g,"").replace(/^mixamorig/,"")]=o});
-  const wp=b=>b.getWorldPosition(new T.Vector3());
-  obj.scale.multiplyScalar(1.75/(wp(bones.HeadTop_End).y-Math.min(wp(bones.RightToe_End).y,wp(bones.LeftToe_End).y)));stage.updateMatrixWorld(true);
-  const CH={Hips:"Spine",Spine:"Spine1",Spine1:"Spine2",Spine2:"Neck",Neck:"Head",Head:"HeadTop_End",
-   RightArm:"RightForeArm",RightForeArm:"RightHand",RightHand:"RightHandMiddle1",LeftArm:"LeftForeArm",LeftForeArm:"LeftHand",LeftHand:"LeftHandMiddle1",
-   RightUpLeg:"RightLeg",RightLeg:"RightFoot",RightFoot:"RightToeBase",LeftUpLeg:"LeftLeg",LeftLeg:"LeftFoot",LeftFoot:"LeftToeBase"};
-  const rest={};for(const n in CH){const b=bones[n];rest[n]={b,q:b.quaternion.clone(),wq:b.getWorldQuaternion(new T.Quaternion()),p:wp(b),d:wp(bones[CH[n]]).sub(wp(b)).normalize()}}
-  const hq=[bones.Hips.position.clone()],pq=new T.Quaternion(),tq=new T.Quaternion();
-  const aim=(n,t)=>{const r=rest[n],b=r.b;b.parent.updateWorldMatrix(true,false);b.parent.getWorldQuaternion(pq);
-   tq.setFromUnitVectors(r.d,t).multiply(r.wq);b.quaternion.copy(pq.invert().multiply(tq));b.updateMatrixWorld(true)};
-  // ألوان العضلات حسب أوزان الجلد
-  let body;obj.traverse(o=>{if(o.isMesh){o.frustumCulled=false;if(/Joints/.test(o.name))o.material=new T.MeshStandardMaterial({color:0x101216,roughness:.5,metalness:.4});else body=o}});
-  const g=body.geometry,n=g.attributes.position.count,si=g.attributes.skinIndex,sw=g.attributes.skinWeight,sb=body.skeleton.bones;
-  const pr=nm=>/ForeArm|Hand/.test(nm)?1:/Arm|Shoulder/.test(nm)?0:/UpLeg/.test(nm)?3:/Leg|Foot|Toe/.test(nm)?4:/Spine|Hips/.test(nm)?2:-1;
-  const bp=sb.map(b=>pr(b.name)),part=new Int8Array(n),ca=new Float32Array(n*3);
-  for(let i=0;i<n;i++){let bi=0,bw=-1;for(let j=0;j<4;j++){const w=sw.getComponent(i,j);if(w>bw){bw=w;bi=si.getComponent(i,j)}}part[i]=bp[bi]}
-  g.setAttribute("color",new T.BufferAttribute(ca,3));body.material=new T.MeshStandardMaterial({vertexColors:true,roughness:.42,metalness:.2});
-  const col=(M,p)=>{for(let i=0;i<n;i++){const q=part[i],t=q>=0&&M.has(q)?.1+.85*p:0;ca[i*3]=.2+.8*t;ca[i*3+1]=.22-.1*t;ca[i*3+2]=.27-.06*t}g.attributes.color.needsUpdate=true};
-  const nearR=rest.RightArm.p.x<rest.LeftArm.p.x,rs=Math.sign(rest.RightArm.p.x)||1,k=1.75/186;
-  let cw=0,ch=0;
-  V3=(e,Z,p,spl)=>{
-   const mir=!!e.mir,D=(a,b,lat)=>mir?new T.Vector3(lat*(b[0]-a[0]),-(b[1]-a[1])+1e-6,0).normalize():new T.Vector3(0,-(b[1]-a[1]),b[0]-a[0]+1e-6).normalize();
-   stage.rotation.y=0;obj.position.set(0,0,0);for(const q in rest)rest[q].b.quaternion.copy(rest[q].q);stage.updateMatrixWorld(true);
-   bones.Hips.position.copy(bones.Hips.parent.worldToLocal(new T.Vector3(0,(226-Z.hp[1])*k,(Z.hp[0]-150)*k)));obj.updateMatrixWorld(true);
-   const sx=mir?20:0,hx=mir?9:0;let ux=Z.sh[0]-Z.hp[0],uy=Z.sh[1]-Z.hp[1];const ul=Math.hypot(ux,uy);ux/=ul;uy/=ul;
-   const r=Z.hd*Math.PI/180,vx=ux*Math.cos(r)-uy*Math.sin(r),vy=ux*Math.sin(r)+uy*Math.cos(r);
-   const aS=[Z.sh[0]+sx,Z.sh[1]],lS=[Z.hp[0]+hx,Z.hp[1]];
-   const arm=w=>{const[E,W]=ik(aS,w,32,28,Z.eb);return[aS,E,W]},leg=a=>{const[K,A]=ik(lS,a,48,46,-1);return[lS,K,A]};
-   const A1=arm(Z.wr),A2=arm(Z.wr2),L1=leg(Z.an),L2=leg(Z.an2),tor=D([0,0],[ux,uy],0),hd=D([0,0],[vx,vy],0);
-   ["Hips","Spine","Spine1","Spine2"].forEach(q=>aim(q,tor));aim("Neck",hd);aim("Head",hd);
-   for(const s of ["Right","Left"]){
-    const lat=(s==="Right"?1:-1)*rs,near=mir||((s==="Right")===nearR),A=near?A1:A2,Lg=near?L1:L2,f=D(A[1],A[2],lat),fr=Z.fa*Math.PI/180;
-    aim(s+"Arm",D(A[0],A[1],lat));aim(s+"ForeArm",f);aim(s+"Hand",f);
-    aim(s+"UpLeg",D(Lg[0],Lg[1],lat));aim(s+"Leg",D(Lg[1],Lg[2],lat));aim(s+"Foot",new T.Vector3(0,-Math.sin(fr),Math.cos(fr)).normalize())}
-   obj.updateMatrixWorld(true);let mn=1e9;
-   ["RightToe_End","LeftToe_End"].forEach(q=>mn=Math.min(mn,wp(bones[q]).y));["RightHand","LeftHand"].forEach(q=>mn=Math.min(mn,wp(bones[q]).y-.05));
-   obj.position.y=-mn;col(new Set(e.mus),p);
-   if(spl){fl.visible=false;stage.rotation.y=Math.sin(spl.el*.9)*.55;const w=innerWidth,h=innerHeight;if(w!==spw||h!==sph){spw=w;sph=h;rsp.setSize(w,h,false);cam2.aspect=w/h;cam2.updateProjectionMatrix()}
-    cam2.position.set(0,1.0,spl.z);cam2.lookAt(0,.75,0);rsp.render(sc,cam2);return}
-   fl.visible=true;stage.rotation.y=(mir?0:Math.PI/2)+yawD;
-   const w=cv.clientWidth,h=cv.clientHeight;if(w!==cw||h!==ch){cw=w;ch=h;rn.setSize(w,h,false);cam.aspect=w/h;cam.updateProjectionMatrix()}
-   cam.position.set(0,1.05,mir?4.6:4.4);cam.lookAt(0,.85,0);rn.render(sc,cam)};
-  let dr=null;cv.addEventListener("pointerdown",e=>dr=e.clientX);addEventListener("pointerup",()=>dr=null);
+  const r=await fetch("xbot.bin");if(!r.ok)throw new Error("لم أجد ملف xbot.bin بجانب index.html");
+  const buf=await r.arrayBuffer(),hl=new DataView(buf).getUint32(0,true),hd=JSON.parse(new TextDecoder().decode(new Uint8Array(buf,4,hl)));
+  const idx={};hd.bones.forEach((b,i)=>{b.parent=b.p;idx[b.n]=i});
+  const rdir=hd.bones.map((b,i)=>{const c=CH[b.n];return c?nz(hd.bones[idx[c]].pos.map((v,j)=>v-b.pos[j])):[0,1,0]});
+  MD={bones:hd.bones,meshes:hd.meshes,idx,rdir,buf,base:4+hl,fz:Math.sign(hd.bones[idx.RightToeBase].pos[2]-hd.bones[idx.RightFoot].pos[2])||1,rs:Math.sign(hd.bones[idx.RightArm].pos[0])||1};
+  const g0=mkGL($("fig3")),g1=mkGL($("sc3"));
+  V3=(e,Z,p,spl)=>{const S=solve(e,Z,p);
+   if(spl)g1(S,S.yaw+Math.sin(spl.el*.9)*.55,[0,110,spl.z],[0,80,0],[0,0,0,0]);
+   else g0(S,S.yaw+yawD,[0,105,e.mir?400:360],[0,85,0],[.137,.149,.18,1])};
+  const cv=$("fig3");let dr=null;cv.addEventListener("pointerdown",e=>dr=e.clientX);addEventListener("pointerup",()=>dr=null);
   cv.addEventListener("pointermove",e=>{if(dr!=null){yawD+=(e.clientX-dr)*.012;dr=e.clientX}});cv.addEventListener("dblclick",()=>yawD=0);
   use3d=true;tR=performance.now();$("fig").style.display="none";cv.style.display="block";st.textContent="↔️ اسحب لتدوير المجسم (نقرتان لإعادته)";
  }catch(e){f3=true;st.textContent="يُعرض الرسم ثنائي الأبعاد — 3D: "+e.message;$("fig3").style.display="none"}
