@@ -21,7 +21,7 @@ h2{margin:6px 0;color:#f5d76e}
 #hpb{position:absolute;inset:0 auto 0 0;background:#ef5b6b;width:100%;transition:width .2s}
 #hpt{position:absolute;inset:0;text-align:center;line-height:26px}
 .cam{position:relative;margin-top:6px;border-radius:8px;overflow:hidden;background:#000;aspect-ratio:3/4}
-video{display:none}#c{width:100%;height:100%;object-fit:contain;background:#000}
+video{display:none}#c{width:100%;height:100%;object-fit:cover;object-position:center top;background:#000}
 .bar{position:absolute;left:10px;top:20%;height:55%;width:16px;background:#39435c;border-radius:8px;overflow:hidden}
 #pb{position:absolute;bottom:0;width:100%;background:#3ddc84;height:0}
 .dmg{text-align:center;background:#2b3652;border-radius:8px;margin-top:6px;padding:8px}
@@ -38,7 +38,7 @@ video{display:none}#c{width:100%;height:100%;object-fit:contain;background:#000}
 .chip{width:auto;display:inline-block;padding:6px 14px;margin:0 0 6px 6px;font-size:14px}.chip.on{background:#4c8dff}
 #chips{white-space:nowrap;overflow-x:auto}
 #s3.on{position:fixed;inset:0;z-index:5;background:#000}
-#s3 .cam{position:absolute;inset:0;margin:0;border-radius:0;aspect-ratio:auto}
+#s3 .cam{position:absolute;inset:0;margin:0;border-radius:0;aspect-ratio:auto;bottom:max(48px,env(safe-area-inset-bottom))}
 .top{position:absolute;top:0;left:0;right:0;display:flex;align-items:center;gap:6px;padding:10px;padding-top:max(10px,env(safe-area-inset-top));background:linear-gradient(#000c,#0000)}
 .ib{width:44px;height:44px;padding:0;margin:0;border-radius:50%;background:#0009;font-size:20px;flex:none}
 .tt{flex:1;min-width:0}#mn{font-size:14px;color:#f5d76e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -59,7 +59,7 @@ video{display:none}#c{width:100%;height:100%;object-fit:contain;background:#000}
 <h2>التمارين</h2><div id="chips"></div><div class="grid" id="grid"></div>
 <div class="card"><b>📜 آخر التمارين</b><div id="hist">لا يوجد بعد</div></div>
 <div class="card"><b>⚖️ حاسبة كتلة الجسم</b><br><input id="bw" class="mi" type="number" placeholder="الوزن كجم"><input id="bh" class="mi" type="number" placeholder="الطول سم"><button onclick="bmi()">احسب</button><div id="br"></div></div>
-<small style="opacity:.6">الإصدار 15 · المجسم 3D: <b id="vs">جارٍ التحميل...</b></small></div>
+<small style="opacity:.6">الإصدار 16 · المجسم 3D: <b id="vs">جارٍ التحميل...</b></small></div>
 
 <div class="s" id="s2"><button onclick="show('s1')" style="width:auto;padding:8px 16px">→ رجوع</button>
 <h2 id="gt"></h2><canvas id="fig" width="300" height="240"></canvas><img id="gimg" alt=""><canvas id="fig3" style="display:none;width:100%;aspect-ratio:6/5;border-radius:10px;touch-action:pan-y"></canvas><div id="m3" style="font-size:13px;opacity:.7;text-align:center"></div>
