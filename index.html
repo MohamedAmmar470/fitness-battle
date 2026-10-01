@@ -59,7 +59,7 @@ video{display:none}#c{width:100%;height:100%;object-fit:cover}
 <h2>التمارين</h2><div id="chips"></div><div class="grid" id="grid"></div>
 <div class="card"><b>📜 آخر التمارين</b><div id="hist">لا يوجد بعد</div></div>
 <div class="card"><b>⚖️ حاسبة كتلة الجسم</b><br><input id="bw" class="mi" type="number" placeholder="الوزن كجم"><input id="bh" class="mi" type="number" placeholder="الطول سم"><button onclick="bmi()">احسب</button><div id="br"></div></div>
-<small style="opacity:.6">الإصدار 13 · المجسم 3D: <b id="vs">جارٍ التحميل...</b></small></div>
+<small style="opacity:.6">الإصدار 14 · المجسم 3D: <b id="vs">جارٍ التحميل...</b></small></div>
 
 <div class="s" id="s2"><button onclick="show('s1')" style="width:auto;padding:8px 16px">→ رجوع</button>
 <h2 id="gt"></h2><canvas id="fig" width="300" height="240"></canvas><img id="gimg" alt=""><canvas id="fig3" style="display:none;width:100%;aspect-ratio:6/5;border-radius:10px;touch-action:pan-y"></canvas><div id="m3" style="font-size:13px;opacity:.7;text-align:center"></div>
@@ -348,13 +348,13 @@ function mkGL(cv){
  const VS=`#version 300 es
 precision highp float;
 in vec3 aP;in vec4 aN;in vec4 aJ;in vec4 aW;
-uniform vec4 uQ[${NB}];uniform vec4 uT[${NB}];uniform mat4 uVP;uniform vec2 uYaw;uniform float uMus[5];
+uniform sampler2D uBones;uniform mat4 uVP;uniform vec2 uYaw;uniform float uMus[5];
 out vec3 vN;out vec3 vW;out float vH;
 vec3 qr(vec4 q,vec3 v){return v+2.0*cross(q.xyz,cross(q.xyz,v)+q.w*v);}
 void main(){vec3 p=vec3(0.0),n=vec3(0.0);
- for(int i=0;i<4;i++){int j=int(aJ[i]+0.5);float w=aW[i];p+=w*(qr(uQ[j],aP)+uT[j].xyz);n+=w*qr(uQ[j],aN.xyz);}
+ for(int i=0;i<4;i++){int j=int(aJ[i]+0.5);float w=aW[i];vec4 q=texelFetch(uBones,ivec2(0,j),0);vec4 t=texelFetch(uBones,ivec2(1,j),0);p+=w*(qr(q,aP)+t.xyz);n+=w*qr(q,aN.xyz);}
  p=vec3(uYaw.y*p.x+uYaw.x*p.z,p.y,-uYaw.x*p.x+uYaw.y*p.z);n=vec3(uYaw.y*n.x+uYaw.x*n.z,n.y,-uYaw.x*n.x+uYaw.y*n.z);
- int pid=int(floor(aN.w*127.0+0.5));vH=pid>=0?uMus[pid]:0.0;vN=normalize(n);vW=p;gl_Position=uVP*vec4(p,1.0);}`;
+ int pid=int(floor(aN.w*127.0+0.5));vH=0.0;if(pid==0)vH=uMus[0];if(pid==1)vH=uMus[1];if(pid==2)vH=uMus[2];if(pid==3)vH=uMus[3];if(pid==4)vH=uMus[4];vN=normalize(n);vW=p;gl_Position=uVP*vec4(p,1.0);}`;
  const FS=`#version 300 es
 precision highp float;
 in vec3 vN;in vec3 vW;in float vH;uniform vec3 uCam;uniform vec3 uBase;out vec4 o;
@@ -369,6 +369,7 @@ precision highp float;in vec3 vW;out vec4 o;void main(){float d=length(vW.xz)/17
  const sh=(t,src)=>{const s=gl.createShader(t);gl.shaderSource(s,src);gl.compileShader(s);if(!gl.getShaderParameter(s,gl.COMPILE_STATUS))throw new Error(gl.getShaderInfoLog(s));return s};
  const prog=(v,f)=>{const p=gl.createProgram();gl.attachShader(p,sh(gl.VERTEX_SHADER,v));gl.attachShader(p,sh(gl.FRAGMENT_SHADER,f));gl.linkProgram(p);if(!gl.getProgramParameter(p,gl.LINK_STATUS))throw new Error(gl.getProgramInfoLog(p));return p};
  const P=prog(VS,FS),PF=prog(FV,FF),U=n=>gl.getUniformLocation(P,n);
+ const boneTex=gl.createTexture(),boneData=new Float32Array(NB*8);gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,boneTex);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.NEAREST);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.NEAREST);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA32F,2,NB,0,gl.RGBA,gl.FLOAT,null);
  const meshes=MD.meshes.map(m=>{const vao=gl.createVertexArray();gl.bindVertexArray(vao);const vb=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,vb);
   gl.bufferData(gl.ARRAY_BUFFER,new Uint8Array(MD.buf,MD.base+m.off,m.nv*24),gl.STATIC_DRAW);
   const at=(nm,sz,ty,nr,off)=>{const l=gl.getAttribLocation(P,nm);gl.enableVertexAttribArray(l);gl.vertexAttribPointer(l,sz,ty,nr,24,off)};
@@ -383,7 +384,7 @@ precision highp float;in vec3 vW;out vec4 o;void main(){float d=length(vW.xz)/17
   gl.viewport(0,0,W,H);gl.clearColor(...bg);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);gl.enable(gl.DEPTH_TEST);gl.enable(gl.BLEND);gl.blendFunc(gl.ONE,gl.ONE_MINUS_SRC_ALPHA);
   const VP=m4(persp(32*Math.PI/180,w/h,10,4000),look(eye,tgt));
   gl.useProgram(PF);gl.uniformMatrix4fv(gl.getUniformLocation(PF,"uVP"),false,VP);gl.bindVertexArray(fao);gl.drawArrays(gl.TRIANGLE_FAN,0,50);
-  gl.useProgram(P);gl.uniformMatrix4fv(U("uVP"),false,VP);gl.uniform4fv(U("uQ"),S.Q);gl.uniform4fv(U("uT"),S.T);gl.uniform1fv(U("uMus"),S.mus);
+  for(let i=0;i<NB;i++){boneData.set(S.Q.subarray(i*4,i*4+4),i*8);boneData.set(S.T.subarray(i*4,i*4+4),i*8+4)}gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,boneTex);gl.texSubImage2D(gl.TEXTURE_2D,0,0,0,2,NB,gl.RGBA,gl.FLOAT,boneData);gl.useProgram(P);gl.uniform1i(U("uBones"),0);gl.uniformMatrix4fv(U("uVP"),false,VP);gl.uniform1fv(U("uMus"),S.mus);
   gl.uniform2f(U("uYaw"),Math.sin(yaw),Math.cos(yaw));gl.uniform3f(U("uCam"),...eye);
   for(const m of meshes){gl.uniform3f(U("uBase"),...(m.joint?[.06,.065,.08]:[.28,.3,.36]));gl.bindVertexArray(m.vao);gl.drawElements(gl.TRIANGLES,m.n,gl.UNSIGNED_SHORT,0)}}}
 async function init3D(){
@@ -401,7 +402,7 @@ async function init3D(){
   const cv=$("fig3");let dr=null;cv.addEventListener("pointerdown",e=>dr=e.clientX);addEventListener("pointerup",()=>dr=null);
   cv.addEventListener("pointermove",e=>{if(dr!=null){yawD+=(e.clientX-dr)*.012;dr=e.clientX}});cv.addEventListener("dblclick",()=>yawD=0);
   use3d=true;$("vs").textContent="جاهز ✓";tR=performance.now();$("fig").style.display="none";cv.style.display="block";st.textContent="↔️ اسحب لتدوير المجسم (نقرتان لإعادته)";
- }catch(e){f3=true;$("vs").textContent="غير جاهز: "+e.message;st.textContent="يُعرض الرسم ثنائي الأبعاد — 3D: "+e.message;$("fig3").style.display="none"}
+ }catch(e){f3=true;const msg=String(e&&e.message||e||"خطأ غير معروف").slice(0,300);$("vs").textContent="غير جاهز: "+msg;$("vs").style.cssText="color:#ff7186;font-weight:700;white-space:normal;overflow-wrap:anywhere";st.textContent="يُعرض الرسم ثنائي الأبعاد — 3D: "+msg;console.error("3D init failed:",e);$("fig3").style.display="none"}
 }
 init3D();
 </script></body></html>
